@@ -29,12 +29,12 @@ for i in find_name:
 
 
 #writing anime's names in .txt file
-file = Path.cwd() / "anime_names.txt"
+file = Path.cwd() / "anime_of_this_season.txt"
 if not file.is_file():
     file.touch()
 with file.open('r+') as f:
     for name in names:
-        if name in "anime_names.txt":
+        if name in "anime_of_this_season.txt":
             continue
         f.write(name + '\n')
 
