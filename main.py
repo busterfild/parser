@@ -1,12 +1,19 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import lxml
 from pathlib import Path
+import time
 
 
 
-driver = webdriver.Chrome()
+options = Options()
+options.add_experimental_option('detach', True)
+
+
+
+driver = webdriver.Chrome(options = options)
 url = "https://animego.me"
 driver.get(url)
 
@@ -39,4 +46,16 @@ with file.open('r+') as f:
         f.write(name + '\n')
 
 
+#open menu
+menu = driver.find_element(By.CSS_SELECTOR, 'button.icon-burger')
+menu.click()
+#find new url by XPath
+header = menu.find_element(By.XPATH, '//nav/a[1]')
+
+
+
+
+new_url = header.get_attribute('href')
+time.sleep(1)
+driver.get(new_url)
 
