@@ -1,7 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options
+from settings import test
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import lxml
@@ -9,16 +9,11 @@ from pathlib import Path
 import time
 
 
-
-options = Options()
-options.add_experimental_option('detach', True)
-
-
-
+option = input("Do You want enable detach?\n Y/n: ")
+options = test(option)
 driver = webdriver.Chrome(options = options)
 url = "https://animego.me"
 driver.get(url)
-
 
 
 names = []
