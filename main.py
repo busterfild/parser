@@ -1,4 +1,6 @@
 from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
@@ -39,7 +41,7 @@ for i in find_name:
 file = Path.cwd() / "anime_of_this_season.txt"
 if not file.is_file():
     file.touch()
-with file.open('r+') as f:
+with file.open('r+', encoding = 'utf-8') as f:
     for name in names:
         if name in "anime_of_this_season.txt":
             continue
@@ -56,6 +58,61 @@ header = menu.find_element(By.XPATH, '//nav/a[1]')
 
 
 new_url = header.get_attribute('href')
-time.sleep(1)
 driver.get(new_url)
 
+filter_find = driver.find_element(By.ID, 'filterBtn')
+filter_find.click()
+
+
+
+
+#setup filter
+wait = WebDriverWait(driver, 10)
+year_from = wait.until(EC.element_to_be_clickable((By.XPATH, '//form/div[1]/div/input[1]')))
+input_from = year_from.send_keys("2025")
+year_to = wait.until(EC.element_to_be_clickable((By.XPATH, '//form/div[1]/div/input[2]')))
+input_to = year_to.send_keys("2025")
+
+
+#choosing genre
+genre_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[contains(text(), "Жанры")]')))
+genre_button.click()
+
+
+romance = driver.find_element(By.ID, 'checkGenreromance')
+romance.click()
+
+close_filter = driver.find_element(By.XPATH, '//*[@id="mmenuSidebar"]/div[1]/button')
+close_filter.click()
+driver.get(driver.current_url)
+
+
+
+
+
+soup = BeautifulSoup(driver.page_source, 'lxml')
+
+
+
+
+parsing_romance_page = soup.find('div', id = 'content-container')
+parsing_romance = parsing_romance_page.find_all('a', class_ = 'text-line-clamp')
+
+
+
+
+names_romance = []
+for i in parsing_romance:
+    names_romance.append(i.get_text())
+    
+
+
+file = Path.cwd() / 'anime_romance.txt'
+
+if not file.is_file():
+    file.touch()
+with file.open('r+', encoding = 'utf-8') as f:
+    for name in names_romance:
+        if name in 'anime_romance.txt':
+            continue
+        f.write(name + '\n')
