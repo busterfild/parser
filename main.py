@@ -23,11 +23,11 @@ options = test(option)
 
 
 
-#selection of years for the filter
+#selection of the filter
 input_year_from = input("since what year: ")
 input_year_to = input("to what year: ")
-
-
+strict_match = input("strict match?\n Y/n (defoult n): ").strip().lower()
+genres = input("Which genres we will looking for?\n").split(', ')
 
 driver = webdriver.Chrome(options = options)
 url = "https://animego.me"
@@ -91,30 +91,37 @@ click_year_from = year_from.send_keys(input_year_from)
 year_to = wait.until(EC.element_to_be_clickable((By.XPATH, '//form/div[1]/div/input[2]')))
 click_year_to = year_to.send_keys(input_year_to)
 
-
 #choosing genre
 genre_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[contains(text(), "Жанры")]')))
 genre_button.click()
+if strict_match == "y":
+    click_strict_match = driver.find_element(By.ID, 'switchCheckstrictly')
+    click_strict_match.click()
+    time.sleep(2)
 
 
-romance = wait.until(EC.element_to_be_clickable((By.ID, 'checkGenreromance')))
-romance.click()
+
+
+find_genre = driver.find_element(By.ID, 'collapseGenres')
+for i in genres:
+    select_genres = find_genre.find_element(By.XPATH, f'.//input[@data-text = "{i.capitalize()}"]')
+    select_genres.click()
 
 close_filter = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="mmenuSidebar"]/div[1]/button')))
 close_filter.click()
 time.sleep(1)
 driver.get(driver.current_url)
 
-
+wait_for_load = WebDriverWait(driver, 1)
 #scroll
 last_height = driver.execute_script("return document.body.scrollHeight")
 while True:
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     try:
-        load_more_href = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="anime-list-results"]/div/div[2]/div[2]/a')))
+        load_more_href = wait_for_load.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="anime-list-results"]/div/div[2]/div[2]/a')))
         load_more_href.click()
     except TimeoutException:
-        print("this element does not exist")
+        pass
     finally:
         time.sleep(2)
         new_height = driver.execute_script("return document.body.scrollHeight")
@@ -128,16 +135,21 @@ soup = BeautifulSoup(driver.page_source, 'lxml')
 
 
 
-
-parsing_romance_page = soup.find('div', id = 'content-container')
-parsing_romance = parsing_romance_page.find_all('a', class_ = 'text-line-clamp')
+try:
+    parsing_romance_page = soup.find('div', id = 'content-container')
+    parsing_romance = parsing_romance_page.find_all('a', class_ = 'text-line-clamp')
+except AttributeError:
+    print("No anime with this genres")
 
 
 
 
 names_romance = []
-for i in parsing_romance:
-    names_romance.append(i.get_text())
+try:
+    for i in parsing_romance:
+        names_romance.append(i.get_text())
+except NameError:
+    pass
     
 
 
@@ -150,3 +162,9 @@ with anime_romantics.open('r+', encoding = 'utf-8') as f:
         if name in 'anime_romance.txt':
             continue
         f.write(name + '\n')
+
+
+
+
+
+
